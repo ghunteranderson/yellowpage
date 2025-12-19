@@ -35,5 +35,4 @@ jobs:
       with:
         name: yellowpage-${{ matrix.target }}
         path: target/yellowpage
-
-    
+        retention-days: 2
