@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import yellowpage.model.DnsMessage.DnsQuestion;
+import yellowpage.model.DnsMessage.DnsResourceRecord;
 import yellowpage.utils.ByteReader;
 import yellowpage.utils.ByteWriter;
 

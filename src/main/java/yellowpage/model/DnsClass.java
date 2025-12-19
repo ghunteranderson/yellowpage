@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum DnsRecordClass {
+public enum DnsClass {
 
   IN(1),
   CS(2),
@@ -14,8 +14,8 @@ public enum DnsRecordClass {
   START(255),
   UNKNOWN(-1);
 
-  public static DnsRecordClass forCode(int code){
-    for(var e : DnsRecordClass.values()){
+  public static DnsClass forCode(int code){
+    for(var e : DnsClass.values()){
       if(e.code == code)
         return e;
     }

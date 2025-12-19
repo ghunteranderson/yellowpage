@@ -2,46 +2,56 @@ package yellowpage.dns;
 
 import java.util.List;
 
+import yellowpage.model.DnsClass;
 import yellowpage.model.DnsMessage;
-import yellowpage.model.DnsRecordClass;
+import yellowpage.model.DnsMessage.DnsResourceRecord;
+import yellowpage.model.DnsRCode;
 import yellowpage.model.DnsRecordType;
-import yellowpage.model.DnsResourceRecord;
-import yellowpage.model.DnsResponseCode;
-import yellowpage.repos.DnsRecord;
+import yellowpage.model.Zone;
 
 public class StandardResponses {
 
   
-  // public DnsMessage noData(DnsMessage request){
+  public static DnsMessage nonExistentDomain(DnsMessage request){
+    var flags = request.getFlags()
+      .copy()
+      .query(false)
+      .authoritative(true)
+      .recusionAvailable(true)
+      .responseCode(DnsRCode.NAME_ERROR)
+      .build();
 
-  // }
+    return DnsMessage.builder()
+      .txId(request.getTxId())
+      .flags(flags)
+      .questions(request.getQuestions())
+      .build();
 
-  // public DnsMessage nonExistentDomain(DnsMessage request){
-
-  // }
+  }
 
   public static DnsMessage noDataNotAuthority(DnsMessage request){
     var flags = request.getFlags()
         .copy()
         .query(false)
         .authoritative(false)
-        .recusionAvailable(false)
-        .responseCode(DnsResponseCode.NO_ERROR)
+        .recusionAvailable(true)
+        .responseCode(DnsRCode.NO_ERROR)
         .build();
 
     return DnsMessage.builder()
       .txId(request.getTxId())
       .flags(flags)
+      .questions(request.getQuestions())
       .build();
   }
 
-  public static DnsMessage addressV4Answer(DnsMessage request, DnsRecord record){
+  public static DnsMessage addressV4Answer(DnsMessage request, Zone.Record record){
     var flags = request.getFlags()
         .copy()
         .query(false)
         .authoritative(true)
         .recusionAvailable(true)
-        .responseCode(DnsResponseCode.NO_ERROR)
+        .responseCode(DnsRCode.NO_ERROR)
         .build();
 
     // Convert IPv4 string to 4 bytes
@@ -53,9 +63,9 @@ public class StandardResponses {
 
     var answer = DnsResourceRecord.builder()
           .type(DnsRecordType.A.getCode())
-          .clazz(DnsRecordClass.IN.getCode())
+          .clazz(DnsClass.IN.getCode())
           .ttl(record.getTtl())
-          .names(List.of(record.getHost().split("\\.")))
+          .names(List.of(record.getName().split("\\.")))
           .data(ipData)
           .build();
 

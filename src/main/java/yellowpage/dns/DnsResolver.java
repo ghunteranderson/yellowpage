@@ -1,17 +1,20 @@
 package yellowpage.dns;
 
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import yellowpage.dispatch.DnsRequestHandler;
 import yellowpage.exceptions.YellowPageException;
 import yellowpage.model.DnsMessage;
-import yellowpage.model.DnsQuestion;
 import yellowpage.model.DnsRecordType;
-import yellowpage.repos.DnsRepo;
+import yellowpage.model.DnsMessage.DnsQuestion;
+import yellowpage.model.Zone;
+import yellowpage.repos.ZoneRepo;
 
 @RequiredArgsConstructor
-public class DnsHandlerImpl implements DnsRequestHandler{
+public class DnsResolver implements DnsRequestHandler{
 
-  private final DnsRepo repo;
+  private final ZoneRepo repo;
 
   @Override
   public DnsMessage handleDnsRequest(DnsMessage request) {
@@ -28,12 +31,30 @@ public class DnsHandlerImpl implements DnsRequestHandler{
   private DnsMessage answerQuestion(DnsMessage request, DnsQuestion question){
 
     var host = String.join(".", question.getNames());
-    var record = repo.query(host, DnsRecordType.A).findFirst();
+    var zones = repo.getZonesByDomain(host);
+    
+    Optional<Zone.Record> record = Optional.empty();
+    for(var zone : zones){
+      record = zone.getRecords(host)
+        .filter(r -> r.getType() == DnsRecordType.A)
+        .findFirst();
+      if(record.isPresent()){
+        break;
+      }
+    }
 
     if(record.isEmpty()){
-      return StandardResponses.noDataNotAuthority(request);
+      if(zones.isEmpty()){
+        // Domain does not exist. This server is unaware of its zone
+        return StandardResponses.noDataNotAuthority(request);
+      }
+      else {
+        // Domain does not exist. We are sure since we manage it's zone
+        return StandardResponses.nonExistentDomain(request);
+      }
     }
     else {
+      // Record found!
       return StandardResponses.addressV4Answer(request, record.get());
     }
   }

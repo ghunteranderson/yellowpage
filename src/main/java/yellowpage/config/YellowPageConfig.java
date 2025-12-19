@@ -1,36 +1,26 @@
 package yellowpage.config;
 
 import java.net.InetAddress;
-import java.util.List;
+import java.util.Optional;
 
-import io.smallrye.config.ConfigMapping;
-import io.smallrye.config.WithDefault;
-import io.smallrye.config.WithName;
+public class YellowPageConfig {
 
-@ConfigMapping(prefix = "yp", namingStrategy = ConfigMapping.NamingStrategy.KEBAB_CASE)
-public interface YellowPageConfig {
-
-  public static YellowPageConfig getInstance() {
-    return ConfigFactory.getInstance().getConfigMapping(YellowPageConfig.class);
+  public static YellowPageConfig getInstance(){
+    return new YellowPageConfig();
   }
 
-  ServerConfig server();
-  
-  @WithName("discovery.file")
-  FileDiscoveryConfig fileDiscovery();
-  
-  public interface ServerConfig {
-    @WithDefault("53")
-    int port();
-  
-    @WithDefault("127.0.0.1")
-    InetAddress ip();
+  private final Config config = new Config();
+
+  public String getZoneDirectory() {
+    return config.get("yp.zones.path").asString().orElse("/etc/yellowpage/zones.d");
   }
 
-  public interface FileDiscoveryConfig {
-    
-    @WithDefault("/etc/yellowpages/records.d/")
-    List<String> paths();
+  public int getServerPort(){
+    return config.get("yp.server.port").asInt().orElse(53);
+  }
+  
+  public Optional<InetAddress> getServerIp(){
+    return config.get("yp.server.ip").asIPv4();
   }
 
 }

@@ -1,0 +1,6 @@
+zone: beta.internal
+ttl: 3600
+records:
+  - name: "node-1"
+    type: A
+    value: 10.0.0.21

@@ -47,9 +47,9 @@ public class DnsFlags {
     return (flags & 0x0010) != 0;
   }
 
-  public DnsResponseCode getResponseCode(){
+  public DnsRCode getResponseCode(){
     int code = flags & 0b1111;
-    return DnsResponseCode.forCode(code);
+    return DnsRCode.forCode(code);
   }
 
   public int getRawFlags(){
@@ -119,7 +119,7 @@ public class DnsFlags {
       return setBit(0x0010, enabled);
     }
 
-    public DnsFlagsBuilder responseCode(DnsResponseCode code){
+    public DnsFlagsBuilder responseCode(DnsRCode code){
       int codeInt = code.getCode();
       if(codeInt < 0 || codeInt > 0x0F)
         throw new IllegalArgumentException("Invalid response code: " + codeInt);

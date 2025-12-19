@@ -7,7 +7,9 @@ import java.nio.channels.DatagramChannel;
 import java.util.function.Consumer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 
+@Log
 @RequiredArgsConstructor
 public class UdpListener {
 
@@ -15,6 +17,7 @@ public class UdpListener {
   private final Consumer<UdpInbound> handler;
 
   public void start() throws IOException {
+
     var buffer = ByteBuffer.allocate(65535);
     var currentThread = Thread.currentThread();
     while (!currentThread.isInterrupted()) {

@@ -1,0 +1,22 @@
+zone: alpha.internal
+ttl: 3600
+records:
+  - name: "node-1"
+    type: A
+    value: 10.0.0.11
+
+  - name: "node-2"
+    type: A
+    value: 10.0.0.12
+
+  - name: "node-3"
+    type: A
+    value: 10.0.0.13
+
+  - name: "node-4"
+    type: A
+    value: 10.0.0.14
+
+  - name: "node-5"
+    type: A
+    value: 10.0.0.15

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum DnsResponseCode {
+public enum DnsRCode {
 
   NO_ERROR(0),
   FORMAT_ERROR(1),
@@ -17,8 +17,8 @@ public enum DnsResponseCode {
 
   private final int code;
 
-  public static DnsResponseCode forCode(int code){
-    for(var e : DnsResponseCode.values()){
+  public static DnsRCode forCode(int code){
+    for(var e : DnsRCode.values()){
       if(e.code == code)
         return e;
     }

@@ -18,6 +18,8 @@
     <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
     <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <lombok.version>1.18.42</lombok.version>
+    <native.maven.plugin.version>0.11.3</native.maven.plugin.version>
 
     <!-- keep backward-compatible properties for some tools -->
     <maven.compiler.source>21</maven.compiler.source>
@@ -32,6 +34,13 @@
         <version>${maven.compiler.plugin.version}</version>
         <configuration>
           <release>${java.version}</release>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+				</annotationProcessorPaths>
         </configuration>
       </plugin>
 
@@ -39,35 +48,22 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven.surefire.plugin.version}</version>
-        <configuration>
-          <environmentVariables>
-            <SMALLRYE_CONFIG_PROFILE>test</SMALLRYE_CONFIG_PROFILE>
-          </environmentVariables>
-        </configuration>
       </plugin>
     </plugins>
   </build>
 
   <dependencies>
-  <!-- https://mvnrepository.com/artifact/io.smallrye.config/smallrye-config -->
-    <dependency>
-        <groupId>io.smallrye.config</groupId>
-        <artifactId>smallrye-config</artifactId>
-        <version>3.14.1</version>
-        <scope>compile</scope>
-    </dependency>
     <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
     <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.42</version>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+    <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
     <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>1.5.22</version>
-        <scope>compile</scope>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>2.5</version>
     </dependency>
     <!-- useful test dependency -->
     <dependency>
@@ -77,4 +73,38 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+
+
+  <profiles>
+    <profile>
+      <id>native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>${native.maven.plugin.version}</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <id>build-native</id>
+                <goals>
+                  <goal>compile-no-fork</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <mainClass>yellowpage.Main</mainClass>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+
+
+
 </project>
