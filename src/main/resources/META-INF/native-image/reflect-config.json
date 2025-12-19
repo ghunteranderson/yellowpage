@@ -1,0 +1,14 @@
+[
+  {
+    "name": "yellowpage.model.Zone",
+    "allDeclaredFields": true,
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "yellowpage.model.Zone$Record",
+    "allDeclaredFields": true,
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  }
+]
