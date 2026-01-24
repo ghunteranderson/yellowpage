@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import yellowpage.exceptions.YellowPageException;
 import yellowpage.model.DnsMessage.DnsQuestion;
 import yellowpage.model.DnsMessage.DnsResourceRecord;
 import yellowpage.utils.ByteReader;
@@ -126,11 +127,7 @@ public class DnsMessageParser {
 
   private static DnsResourceRecord readResourceRecord(ByteReader reader) {
     // Read QNAME
-    var names = new ArrayList<String>();
-    int nameSize;
-    while ((nameSize = reader.nextByte()) > 0) {
-      names.add(reader.nextString(nameSize));
-    }
+    var names = parseName(reader);
 
     // Read QTYPE/QCLASS
     var r_type = reader.nextShort();
@@ -171,6 +168,41 @@ public class DnsMessageParser {
     else{
       out.writeShort(data.length);
       out.writeBytes(data);
+    }
+  }
+
+  private static List<String> parseName(ByteReader reader){
+    var names = new ArrayList<String>();
+    parseName(reader, names);
+    return names;
+  }
+
+
+  private static void parseName(ByteReader reader, List<String> names){
+    int nameOffset = reader.getIdx();
+    int nameSize;
+    while ((nameSize = reader.nextByte()) > 0) {
+      boolean notPointer = nameSize < 0xC0 || nameSize >= 0xD0;
+      // Easy. Add the name and check the next length
+      if(notPointer){
+        names.add(reader.nextString(nameSize));
+      }
+      // We encountered a pointer.
+      // This is the end of the label at this point in the data
+      // Jump to the referenced location
+      // It must be above the current location and 
+      else {
+        int byte1 = nameSize;
+        int byte2 = reader.nextByte();
+        int offset = ((byte1 & 0x3F) << 8) | byte2;
+        if(offset >= nameOffset)
+          throw new YellowPageException("Invalid pointer at " + nameOffset);
+        
+        // Recurse pointer
+        var ptrReader = reader.detach(offset);
+        names.addAll(parseName(ptrReader));
+        break;
+      }
     }
   }
 

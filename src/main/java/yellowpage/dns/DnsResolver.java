@@ -1,62 +1,78 @@
 package yellowpage.dns;
 
-import java.util.Optional;
+import java.util.List;
 
 import lombok.RequiredArgsConstructor;
-import yellowpage.dispatch.DnsRequestHandler;
+import lombok.extern.java.Log;
 import yellowpage.exceptions.YellowPageException;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsRecordType;
-import yellowpage.model.DnsMessage.DnsQuestion;
 import yellowpage.model.Zone;
+import yellowpage.model.DnsMessage.DnsQuestion;
 import yellowpage.repos.ZoneRepo;
 
+@Log
 @RequiredArgsConstructor
-public class DnsResolver implements DnsRequestHandler{
+public class DnsResolver implements DnsMessageHandler {
 
   private final ZoneRepo repo;
+  private final DnsForwarder forwarder;
 
   @Override
-  public DnsMessage handleDnsRequest(DnsMessage request) {
-    
-    var questions = request.getQuestions();
-    if(questions.size() == 0)
-      throw new YellowPageException("No questions in query.");
-    if(questions.size() > 1)
-      throw new YellowPageException("Multiple questions in query: " + questions.size());
-
-    return answerQuestion(request, questions.get(0));
+  public void handleInboundDnsMessage(MessageContext ctx) {
+      answerOrForward(ctx);
   }
 
-  private DnsMessage answerQuestion(DnsMessage request, DnsQuestion question){
+  private void answerOrForward(MessageContext ctx) {
 
+    var clientMesg = ctx.getMessage();
+
+    // Extract DNS question
+    var questions = clientMesg.getQuestions();
+    if (questions.size() == 0)
+      throw new YellowPageException("No questions in query.");
+    if (questions.size() > 1)
+      throw new YellowPageException("Multiple questions in query: " + questions.size());
+
+    // Lookup matching zone
+    var question = questions.get(0);
     var host = String.join(".", question.getNames());
     var zones = repo.getZonesByDomain(host);
-    
-    Optional<Zone.Record> record = Optional.empty();
-    for(var zone : zones){
+
+    // Use DNS forwarder
+    if (zones.isEmpty()) {
+      forwarder.forwardQuery(ctx);
+    }
+
+    // We can answer authoritatively
+    else {
+      var record = queryZones(question, host, zones);
+      ctx.reply(buildAnswer(record, clientMesg));
+    }
+
+  }
+
+  private DnsMessage buildAnswer(Zone.Record record, DnsMessage clientMesg) {
+    // Build DNS answer
+    if (record == null)
+      return DnsResponseBuilder.nonExistentDomain(clientMesg);
+    else
+      return DnsResponseBuilder.addressV4Answer(clientMesg, record);
+  }
+
+  private Zone.Record queryZones(DnsQuestion question, String host, List<Zone> zones) {
+    Zone.Record record = null;
+    for (var zone : zones) {
       record = zone.getRecords(host)
-        .filter(r -> r.getType() == DnsRecordType.A)
-        .findFirst();
-      if(record.isPresent()){
+          .filter(r -> r.getType() == DnsRecordType.A)
+          .findFirst()
+          .orElse(null);
+      if (record != null) {
         break;
       }
     }
 
-    if(record.isEmpty()){
-      if(zones.isEmpty()){
-        // Domain does not exist. This server is unaware of its zone
-        return StandardResponses.noDataNotAuthority(request);
-      }
-      else {
-        // Domain does not exist. We are sure since we manage it's zone
-        return StandardResponses.nonExistentDomain(request);
-      }
-    }
-    else {
-      // Record found!
-      return StandardResponses.addressV4Answer(request, record.get());
-    }
+    return record;
   }
-  
+
 }

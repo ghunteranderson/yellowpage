@@ -2,22 +2,24 @@ package yellowpage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.DatagramChannel;
 
 import lombok.extern.java.Log;
 import yellowpage.config.YellowPageConfig;
-import yellowpage.dispatch.UdpDispatcher;
-import yellowpage.dispatch.UdpListener;
-import yellowpage.dns.DnsResolver;
+import yellowpage.dns.InboundUdpDispatcher;
+import yellowpage.events.OutboundUdpEvent;
+import yellowpage.events.InboundUdpEvent;
+import yellowpage.events.EventBus;
 import yellowpage.repos.ZoneRepoFactory;
+import yellowpage.udp.UdpConnector;
 
 @Log
 public class Main {
   public static void main(String[] args) throws IOException {
+
     // Configure log format
     var formatKey = "java.util.logging.SimpleFormatter.format";
-    if(!System.getProperties().contains(formatKey))
-      System.setProperty(formatKey, "[%4$s] %5$s%n");
+    if (!System.getProperties().contains(formatKey))
+      System.setProperty(formatKey, "[%4$s] %5$s%6$s%n");
 
     log.info("Starting Yellowpage DNS Server");
 
@@ -27,24 +29,18 @@ public class Main {
     var ipOpt = config.getServerIp();
 
     // Setup DNS request handler
+    var bus = new EventBus();
     var repo = ZoneRepoFactory.newInstance();
-    var handler = new DnsResolver(repo);
-    var dispatcher = new UdpDispatcher(handler);
+
+    var resolver = new InboundUdpDispatcher(repo, config.getForwarderAddress());
+    bus.register(InboundUdpEvent.class, resolver::handleInboundUdpEvent);
 
     // Start UDP listener
-    var channel = DatagramChannel.open();
-    if(ipOpt.isPresent()){
-      var ip = ipOpt.get(); 
-      log.info("Starting UDP listener at " + ip.getHostAddress() + ":" + port);
-      channel.bind(new InetSocketAddress(ip, port));
-    }
-    else {
-      log.info(() -> "Starting UDP listener at 0.0.0.0:" + port);
-      channel.bind(new InetSocketAddress(port));
-    }
-    channel.configureBlocking(false);
-    new UdpListener(channel, dispatcher).start();
-    channel.close();
+    var address = ipOpt.map(ip -> new InetSocketAddress(ip, port)).orElseGet(() -> new InetSocketAddress(port));
+    var listener = new UdpConnector(address);
+    listener.onRecieve(message -> bus.fire(new InboundUdpEvent(message)));
+    bus.register(OutboundUdpEvent.class, (b, event) -> listener.send(event.getUdpMessage()));
+    listener.start(); // Blocks. Main thread becomes the listener.
 
     log.info("Shutting down.");
   }

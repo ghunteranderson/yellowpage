@@ -64,6 +64,12 @@ public class ByteReader {
     idx += size;
     return value;
   }
+  
+  public ByteReader detach(int newIndex){
+    var reader = new ByteReader(data);
+    reader.idx = newIndex;
+    return reader;
+  }
 
   private void assertRemaining(int requestedSize) {
     if (remaining() < requestedSize)

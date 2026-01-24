@@ -1,0 +1,7 @@
+{
+  "java.test.config": {
+    "name": "Yellowpage Unit Tests",
+    "workingDirectory": "${workspaceFolder}"
+  },
+  "explorer.excludeGitIgnore": true
+}

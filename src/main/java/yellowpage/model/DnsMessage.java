@@ -37,4 +37,15 @@ public class DnsMessage {
     private final byte[] data;
   }
 
+  public DnsMessage withTxId(int newTxId){
+    return DnsMessage.builder()
+      .txId(newTxId)
+      .flags(flags)
+      .questions(questions)
+      .answerRecords(answerRecords)
+      .authoritiesRecords(authoritiesRecords)
+      .additionalRecords(additionalRecords)
+      .build();
+  }
+
 }

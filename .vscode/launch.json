@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run DNS Server",
+      "request": "launch",
+      "mainClass": "yellowpage.Main",
+      "vmArgs": [
+        "-Dyp.server.port=8053",
+        "-Dyp.zones.path=src/test/resources/zones"
+      ]
+    }
+  ]
+}
