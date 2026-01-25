@@ -10,6 +10,7 @@ import yellowpage.model.DnsRecordType;
 import yellowpage.model.Zone;
 import yellowpage.model.DnsMessage.DnsQuestion;
 import yellowpage.repos.ZoneRepo;
+import yellowpage.repos.ZoneRepoFactory;
 
 @Log
 @RequiredArgsConstructor
@@ -17,6 +18,10 @@ public class DnsResolver implements DnsMessageHandler {
 
   private final ZoneRepo repo;
   private final DnsForwarder forwarder;
+
+  public DnsResolver(DnsForwarder forwarder){
+    this(ZoneRepoFactory.newInstance(), forwarder);
+  }
 
   @Override
   public void handleInboundDnsMessage(MessageContext ctx) {

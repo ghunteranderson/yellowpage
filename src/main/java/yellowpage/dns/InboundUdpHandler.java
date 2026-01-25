@@ -5,30 +5,28 @@ import java.util.HexFormat;
 import java.util.logging.Level;
 
 import lombok.extern.java.Log;
-import yellowpage.events.EventBus;
-import yellowpage.events.InboundUdpEvent;
-import yellowpage.events.OutboundUdpEvent;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsMessageParser;
-import yellowpage.repos.ZoneRepo;
-import yellowpage.udp.UdpConnector.UdpMessage;
+import yellowpage.udp.UdpConnector;
+import yellowpage.udp.UdpMessage;
 
 @Log
-public class InboundUdpDispatcher {
+public class InboundUdpHandler {
 
-  private DnsForwarder forwarder;
-  private DnsResolver resolver;
-  private SocketAddress forwardAddr;
+  private final DnsForwarder forwarder;
+  private final DnsResolver resolver;
+  private final SocketAddress forwardAddr;
+  private final UdpConnector udpConnector;
 
-  public InboundUdpDispatcher(ZoneRepo zoneRepo, SocketAddress forwardAddr){
+  public InboundUdpHandler(UdpConnector udpConnector, SocketAddress forwardAddr){
+    this.udpConnector = udpConnector;
     this.forwardAddr = forwardAddr;
     this.forwarder = new DnsForwarder(forwardAddr);
-    this.resolver = new DnsResolver(zoneRepo, forwarder);
+    this.resolver = new DnsResolver(forwarder);
   }
 
-  public void handleInboundUdpEvent(EventBus bus, InboundUdpEvent event){
+  public void handleInboundUdpEvent(UdpMessage udpMessageIn){
 
-    var udpMessageIn = event.getUdpMessage();
     var sourceAddr = udpMessageIn.address;
     var isForwardResponse = forwardAddr.equals(sourceAddr);
 
@@ -66,12 +64,12 @@ public class InboundUdpDispatcher {
 
     // Queue Resposne
     if(udpMessageOut != null){
-      bus.fire(new OutboundUdpEvent(udpMessageOut));
+      udpConnector.send(udpMessageOut);
     }
     // Handle error cases
     else if(!isForwardResponse){
       // Do not send error to upstream DNS
-      bus.fire(new UdpMessage(
+      udpConnector.send(new UdpMessage(
         DnsMessageParser.toBytes(DnsResponseBuilder.serverError(dnsMessageIn)),
         sourceAddr
       ));

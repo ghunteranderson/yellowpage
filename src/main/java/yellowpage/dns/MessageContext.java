@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import yellowpage.exceptions.YellowPageException;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsMessageParser;
-import yellowpage.udp.UdpConnector.UdpMessage;
+import yellowpage.udp.UdpMessage;
 
 
 @RequiredArgsConstructor

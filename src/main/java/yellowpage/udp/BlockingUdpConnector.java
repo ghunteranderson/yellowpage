@@ -1,0 +1,60 @@
+package yellowpage.udp;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+
+import lombok.extern.java.Log;
+import yellowpage.exceptions.YellowPageException;
+
+@Log
+public class BlockingUdpConnector implements UdpConnector {
+
+  private final DatagramChannel channel;
+
+  public BlockingUdpConnector(InetSocketAddress address) {
+    try {
+      this.channel = DatagramChannel.open();
+      this.channel.bind(address);
+      channel.configureBlocking(false);
+    } catch(IOException ex){
+      throw new YellowPageException("Could not create UdpConnector.", ex);
+    }
+  }
+
+  @Override
+  public void send(UdpMessage message) {
+    var buffer = ByteBuffer.wrap(message.data);
+    try {
+      channel.send(buffer, message.address);
+    } catch(IOException ex){
+      throw new IllegalStateException("Could not send UDP message.", ex);
+    }
+  }
+
+  @Override
+  public UdpMessage receive() {
+    var buffer = ByteBuffer.allocate(65535); // TODO Consider making this a thread-local resource
+    SocketAddress addr = null;
+    try {
+      addr = channel.receive(buffer);
+    } catch(IOException ex){
+      throw new YellowPageException("Could not receive UDP message.", ex);
+    }
+
+    if(addr != null){
+      buffer.flip();
+      byte[] data = new byte[buffer.remaining()];
+      buffer.get(data);
+      buffer.clear();
+      var message = new UdpMessage(data, addr);
+      return message;
+    }
+    else {
+      return null; // TODO: Is this really a "BlockingUdpConnector" and does it need to be? Review name/behavior.
+    }
+  }
+
+}
