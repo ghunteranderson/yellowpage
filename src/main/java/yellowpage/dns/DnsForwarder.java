@@ -1,7 +1,7 @@
 package yellowpage.dns;
 
 import java.net.SocketAddress;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ public class DnsForwarder implements DnsMessageHandler {
   private static final AtomicInteger NEXT_TX_ID = new AtomicInteger(1);
   private static final int PENDING_BUFFER_MAX_SIZE = 200;
 
-  private final LinkedList<PendingRequest> pendingRequests = new LinkedList<>();
+  private final ConcurrentSkipListSet<PendingRequest> pendingRequests = new ConcurrentSkipListSet<>();
   private final SocketAddress forwardAddr;
 
   public DnsForwarder(SocketAddress dest) {
@@ -75,19 +75,32 @@ public class DnsForwarder implements DnsMessageHandler {
     // before they timeout.
     if (pendingRequests.size() > PENDING_BUFFER_MAX_SIZE) {
       synchronized (pendingRequests) {
-        var size = pendingRequests.size();
-        var overage = size - PENDING_BUFFER_MAX_SIZE;
-        for (int i = 0; i < overage; i++)
-          pendingRequests.remove(0);
+        while(pendingRequests.size() > PENDING_BUFFER_MAX_SIZE){
+          var candidate = pendingRequests.getFirst();
+          pendingRequests.remove(candidate);
+        }
       }
     }
   }
 
   @RequiredArgsConstructor
-  private static class PendingRequest {
+  private static class PendingRequest implements Comparable<PendingRequest>{
+    private final long createdAt;
     private final SocketAddress originalAddress;
     private final int originalTxId;
     private final int forwardedTxId;
+
+    public PendingRequest(SocketAddress originalAddress, int originalTxId, int forwardedTxId){
+      this.createdAt = System.currentTimeMillis();
+      this.originalAddress = originalAddress;
+      this.originalTxId = originalTxId;
+      this.forwardedTxId = forwardedTxId;
+    }
+
+    @Override
+    public int compareTo(PendingRequest other) {
+      return Long.compare(this.createdAt, other.createdAt);
+    }
   }
 
 }
