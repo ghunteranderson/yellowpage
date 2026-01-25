@@ -15,8 +15,10 @@ jobs:
         include:
           - target: "x86"
             runner_label: ubuntu-24.04
-          - target: "arm64"
+            profile: native
+          - target: "arm-pi"
             runner_label: ubuntu-24.04-arm
+            profile: native-rpi
 
     steps:
     - uses: actions/checkout@v4

@@ -77,6 +77,7 @@
 
 
   <profiles>
+    <!--  Native Builds -->
     <profile>
       <id>native</id>
       <build>
@@ -102,7 +103,34 @@
         </plugins>
       </build>
     </profile>
-  </profiles>
+    <!-- Raspberry Pi Builds -->
+    <!-- TODO: There's a better way to consolidate these two profiles, I'm just too sleepy to fix it. -->
+    <profile>
+      <id>native-rpi</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>${native.maven.plugin.version}</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <id>build-native</id>
+                <goals>
+                  <goal>compile-no-fork</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <mainClass>yellowpage.Main</mainClass>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles> 
 
 
 
