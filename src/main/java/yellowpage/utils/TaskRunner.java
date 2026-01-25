@@ -4,17 +4,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.RequiredArgsConstructor;
 
 public class TaskRunner {
 
-  private static int nextThreadId = 1;
+  private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
 
   private static final ScheduledThreadPoolExecutor pool = new ScheduledThreadPoolExecutor(0, TaskRunner::threadFactory);
 
   private static final Thread threadFactory(Runnable runnable){
-    var thread = new Thread(runnable, "YellowPage-TaskRunner-" + nextThreadId++);
+    var thread = new Thread(runnable, "Yellowpage-TaskRunner-" + NEXT_THREAD_ID.getAndIncrement());
     thread.setDaemon(true);
     return thread;
   }

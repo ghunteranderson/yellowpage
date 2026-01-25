@@ -3,15 +3,16 @@ package yellowpage.udp;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AsyncUdpConnector implements UdpConnector {
+
+  private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
 
   private Queue<UdpMessage> outbound;
   private Queue<UdpMessage> inbound;
 
-  private ExecutorService worker;
+  private Thread worker;
 
   private UdpConnector udpConnector;
 
@@ -20,8 +21,8 @@ public class AsyncUdpConnector implements UdpConnector {
     this.outbound = new ArrayBlockingQueue<>(bufferSize);
     this.inbound = new ArrayBlockingQueue<>(bufferSize);
 
-    this.worker = Executors.newFixedThreadPool(1);
-    this.worker.submit(this::run);
+    this.worker = new Thread(this::run, "Yellowpage-UdpConnector-" + NEXT_THREAD_ID.getAndIncrement());
+    this.worker.start();
   }
 
   private void run(){
@@ -53,7 +54,7 @@ public class AsyncUdpConnector implements UdpConnector {
   }
 
   public void stop(){
-    this.worker.shutdown();
+    this.worker.interrupt();
   }
 
   @Override

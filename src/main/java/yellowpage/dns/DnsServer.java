@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import yellowpage.config.YellowPageConfig;
 import yellowpage.udp.AsyncUdpConnector;
@@ -11,6 +12,8 @@ import yellowpage.udp.BlockingUdpConnector;
 import yellowpage.udp.UdpConnector;
 
 public class DnsServer {
+
+  private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
 
   private final ExecutorService resolverPool;
   private final InboundUdpHandler handler;
@@ -33,7 +36,9 @@ public class DnsServer {
 
     // Start workers
     int poolSize = 10;
-    resolverPool = Executors.newFixedThreadPool(poolSize);
+    resolverPool = Executors.newFixedThreadPool(
+      poolSize, 
+      runnable -> new Thread(runnable, "Yellowpage-Resolver-" + NEXT_THREAD_ID.getAndIncrement()));
     running = new AtomicBoolean(true);
     for(int i=0; i<10; i++){
       resolverPool.submit(this::handlerTask);
