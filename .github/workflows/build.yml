@@ -15,10 +15,10 @@ jobs:
         include:
           - target: "x86"
             runner_label: ubuntu-24.04
-            profile: native
+            mvn_profile: native
           - target: "arm-pi"
             runner_label: ubuntu-24.04-arm
-            profile: native-rpi
+            mvn_profile: native-rpi
 
     steps:
     - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -B package -Pnative
+      run: mvn -B package -P${{ matrix.mvn_profile }}
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
