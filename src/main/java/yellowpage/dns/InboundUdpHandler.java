@@ -5,6 +5,7 @@ import java.util.HexFormat;
 import java.util.logging.Level;
 
 import lombok.extern.java.Log;
+import yellowpage.config.YellowPageConfig;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsMessageParser;
 import yellowpage.udp.UdpConnector;
@@ -18,11 +19,11 @@ public class InboundUdpHandler {
   private final SocketAddress forwardAddr;
   private final UdpConnector udpConnector;
 
-  public InboundUdpHandler(UdpConnector udpConnector, SocketAddress forwardAddr){
+  public InboundUdpHandler(YellowPageConfig config, UdpConnector udpConnector, SocketAddress forwardAddr){
     this.udpConnector = udpConnector;
     this.forwardAddr = forwardAddr;
     this.forwarder = new DnsForwarder(forwardAddr);
-    this.resolver = new DnsResolver(forwarder);
+    this.resolver = new DnsResolver(config, forwarder);
   }
 
   public void handleInboundUdpEvent(UdpMessage udpMessageIn){

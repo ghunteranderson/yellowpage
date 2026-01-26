@@ -1,4 +1,4 @@
-package yellowpage.repos;
+package yellowpage.dns;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,18 +8,18 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class ZoneFileRepoTest {
+public class ZoneRepoTest {
 
   @Test
   void test_noMatches() throws IOException {
-    var repo = new ZoneFileRepo(List.of("src/test/resources/zones"));
+    var repo = new ZoneRepo(List.of("src/test/resources/zones"));
     var zones = repo.getZonesByDomain("www.example.com");
     assertTrue(zones.isEmpty());
   }
 
   @Test
   void test_matchBeta() throws IOException {
-    var repo = new ZoneFileRepo(List.of("src/test/resources/zones"));
+    var repo = new ZoneRepo(List.of("src/test/resources/zones"));
     var zones = repo.getZonesByDomain("dns.beta.internal");
 
     assertEquals(1, zones.size());

@@ -1,4 +1,4 @@
-package yellowpage.repos;
+package yellowpage.dns;
 
 import java.io.File;
 import java.time.Instant;
@@ -13,27 +13,32 @@ import java.util.stream.Stream;
 
 
 import lombok.extern.java.Log;
+import yellowpage.config.YellowPageConfig;
 import yellowpage.model.Zone;
 import yellowpage.model.ZoneParser;
 import yellowpage.utils.TaskRunner;
 
 @Log
-public class ZoneFileRepo implements ZoneRepo {
+public class ZoneRepo {
 
   private final File[] paths;
   private Map<String, Zone> cache;
   private Map<String, Instant> previousLastModifiedTimes;
 
-  public ZoneFileRepo(List<String> paths){
+  public ZoneRepo(YellowPageConfig config){
+    this(List.of(config.getZoneDirectory()));
+  }
+
+  public ZoneRepo(List<String> paths){
     this.paths = paths.stream().map(File::new).toArray(i -> new File[i]);
     cache = Map.of();
     previousLastModifiedTimes = new HashMap<>();
-
+    
+    log.info(() -> "Monitoring file paths for DNS records: " + paths);
     TaskRunner.once(this::refreshAll, 0, TimeUnit.SECONDS).join();
     TaskRunner.repeat(this::refreshAll, 30, TimeUnit.SECONDS);
   }
 
-  @Override
   public List<Zone> getZonesByDomain(String domain) {
     return cache.values().stream()
       .filter(z -> domain.endsWith(z.getZone()))
@@ -41,7 +46,6 @@ public class ZoneFileRepo implements ZoneRepo {
       .collect(Collectors.toList());
   }
 
-  @Override
   public List<Zone> getZones() {
     return new ArrayList<>(this.cache.values());
   }

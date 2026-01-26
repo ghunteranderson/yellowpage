@@ -32,7 +32,7 @@ public class DnsServer {
 
     // Setup handler
     var forwardAddr = config.getForwarderAddress();
-    this.handler = new InboundUdpHandler(udpConnection, forwardAddr);
+    this.handler = new InboundUdpHandler(config, udpConnection, forwardAddr);
 
     // Start workers
     int poolSize = 10;
