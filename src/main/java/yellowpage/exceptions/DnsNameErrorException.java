@@ -1,6 +1,6 @@
 package yellowpage.exceptions;
 
-public class DnsNameErrorException extends YellowPageException {
+public class DnsNameErrorException extends YellowpageException {
 
   public DnsNameErrorException(String message) {
     super(message);

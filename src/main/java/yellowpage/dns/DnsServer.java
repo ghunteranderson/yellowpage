@@ -6,7 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import yellowpage.config.YellowPageConfig;
+import yellowpage.config.YellowpageConfig;
 import yellowpage.udp.AsyncUdpConnector;
 import yellowpage.udp.BlockingUdpConnector;
 import yellowpage.udp.UdpConnector;
@@ -20,7 +20,7 @@ public class DnsServer {
   private final UdpConnector udpConnection;
   private final AtomicBoolean running;
 
-  public DnsServer(YellowPageConfig config) {
+  public DnsServer(YellowpageConfig config) {
 
     // Setup UDP connection
     var bindPort = config.getServerPort();

@@ -3,7 +3,7 @@ package yellowpage;
 import java.util.logging.LogManager;
 
 import lombok.extern.java.Log;
-import yellowpage.config.YellowPageConfig;
+import yellowpage.config.YellowpageConfig;
 import yellowpage.dns.DnsServer;
 
 @Log
@@ -29,7 +29,7 @@ public class Main {
     log.info("Starting Yellowpage DNS Server");
 
     // Fetch configs
-    var config = YellowPageConfig.getInstance();
+    var config = YellowpageConfig.getInstance();
     this.server = new DnsServer(config);
   }
   

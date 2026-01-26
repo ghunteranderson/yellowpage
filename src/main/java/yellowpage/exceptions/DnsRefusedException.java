@@ -1,6 +1,6 @@
 package yellowpage.exceptions;
 
-public class DnsRefusedException extends YellowPageException {
+public class DnsRefusedException extends YellowpageException {
 
   public DnsRefusedException(String message) {
     super(message);

@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 
 import lombok.extern.java.Log;
-import yellowpage.config.YellowPageConfig;
+import yellowpage.config.YellowpageConfig;
 import yellowpage.model.Zone;
 import yellowpage.model.ZoneParser;
 import yellowpage.utils.TaskRunner;
@@ -25,7 +25,7 @@ public class ZoneRepo {
   private Map<String, Zone> cache;
   private Map<String, Instant> previousLastModifiedTimes;
 
-  public ZoneRepo(YellowPageConfig config){
+  public ZoneRepo(YellowpageConfig config){
     this(List.of(config.getZoneDirectory()));
   }
 

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import yellowpage.exceptions.YellowPageException;
+import yellowpage.exceptions.YellowpageException;
 import yellowpage.model.DnsMessage.DnsQuestion;
 import yellowpage.model.DnsMessage.DnsResourceRecord;
 import yellowpage.utils.ByteReader;
@@ -196,7 +196,7 @@ public class DnsMessageParser {
         int byte2 = reader.nextByte();
         int offset = ((byte1 & 0x3F) << 8) | byte2;
         if(offset >= nameOffset)
-          throw new YellowPageException("Invalid pointer at " + nameOffset);
+          throw new YellowpageException("Invalid pointer at " + nameOffset);
         
         // Recurse pointer
         var ptrReader = reader.detach(offset);

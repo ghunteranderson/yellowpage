@@ -4,10 +4,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 
-public class YellowPageConfig {
+public class YellowpageConfig {
 
-  public static YellowPageConfig getInstance() {
-    return new YellowPageConfig();
+  public static YellowpageConfig getInstance() {
+    return new YellowpageConfig();
   }
 
   private final Config config = new Config();

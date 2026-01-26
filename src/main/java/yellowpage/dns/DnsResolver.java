@@ -4,8 +4,8 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
-import yellowpage.config.YellowPageConfig;
-import yellowpage.exceptions.YellowPageException;
+import yellowpage.config.YellowpageConfig;
+import yellowpage.exceptions.YellowpageException;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsRecordType;
 import yellowpage.model.Zone;
@@ -18,7 +18,7 @@ public class DnsResolver implements DnsMessageHandler {
   private final ZoneRepo repo;
   private final DnsForwarder forwarder;
 
-  public DnsResolver(YellowPageConfig config, DnsForwarder forwarder){
+  public DnsResolver(YellowpageConfig config, DnsForwarder forwarder){
     this(new ZoneRepo(config), forwarder);
   }
 
@@ -34,9 +34,9 @@ public class DnsResolver implements DnsMessageHandler {
     // Extract DNS question
     var questions = clientMesg.getQuestions();
     if (questions.size() == 0)
-      throw new YellowPageException("No questions in query.");
+      throw new YellowpageException("No questions in query.");
     if (questions.size() > 1)
-      throw new YellowPageException("Multiple questions in query: " + questions.size());
+      throw new YellowpageException("Multiple questions in query: " + questions.size());
 
     // Lookup matching zone
     var question = questions.get(0);

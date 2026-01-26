@@ -1,6 +1,6 @@
 package yellowpage.exceptions;
 
-public class DnsFormatErrorException extends YellowPageException {
+public class DnsFormatErrorException extends YellowpageException {
 
   public DnsFormatErrorException(String message) {
     super(message);

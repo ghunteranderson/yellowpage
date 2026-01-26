@@ -1,6 +1,6 @@
 package yellowpage.exceptions;
 
-public class DnsNotImplementedException extends YellowPageException {
+public class DnsNotImplementedException extends YellowpageException {
 
   public DnsNotImplementedException(String message) {
     super(message);

@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
 import lombok.extern.java.Log;
-import yellowpage.exceptions.YellowPageException;
+import yellowpage.exceptions.YellowpageException;
 
 @Log
 public class BlockingUdpConnector implements UdpConnector {
@@ -20,7 +20,7 @@ public class BlockingUdpConnector implements UdpConnector {
       this.channel.bind(address);
       channel.configureBlocking(false);
     } catch(IOException ex){
-      throw new YellowPageException("Could not create UdpConnector.", ex);
+      throw new YellowpageException("Could not create UdpConnector.", ex);
     }
   }
 
@@ -41,7 +41,7 @@ public class BlockingUdpConnector implements UdpConnector {
     try {
       addr = channel.receive(buffer);
     } catch(IOException ex){
-      throw new YellowPageException("Could not receive UDP message.", ex);
+      throw new YellowpageException("Could not receive UDP message.", ex);
     }
 
     if(addr != null){
