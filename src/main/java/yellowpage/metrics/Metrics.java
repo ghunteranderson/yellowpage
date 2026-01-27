@@ -11,34 +11,34 @@ import lombok.NoArgsConstructor;
 public class Metrics {
 
   private static final Counter DNS_ANSWERED = Counter.builder()
-    .name("yellowpage_dns_answered")
+    .name("yp_dns_answered")
     .help("The number of answered DNS queries including NXDOMAIN.")
     .labelNames("kind")
     .register();
 
   private static final Gauge DNS_FORWARD_PENDING = Gauge.builder()
-    .name("yellowpage_dns_forward_pending")
+    .name("yp_dns_forward_pending")
     .help("Number of forwarded DNS queries awaiting a response.")
     .register();
 
   private static final Counter DNS_FORWARD_DROPPED = Counter.builder()
-    .name("yellowpage_dns_forward_dropped")
+    .name("yp_dns_forward_dropped")
     .help("Number of forwarded DNS queries that have been dropped due to no response.")
     .register();
 
   private static final Counter DNS_ERROR = Counter.builder()
-    .name("yellowpage_dns_error")
+    .name("yp_dns_error")
     .help("Number of DNS error responses. This excludes malformed DNS requests that fail to parse.")
     .register();
 
   private static final Gauge UDP_BUFFERED_INBOUND = Gauge.builder()
-    .name("yellowpage_udp_buffered")
+    .name("yp_udp_buffered")
     .help("The number of buffered UDP messages awaiting handling.")
     .labelNames("kind")
     .register();
 
   private static final Counter UDP_ERROR = Counter.builder()
-    .name("yellowpage_udp_error")
+    .name("yp_udp_error")
     .help("Number of UDP IO errors.")
     .register();
 
