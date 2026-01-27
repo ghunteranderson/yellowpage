@@ -34,7 +34,7 @@ public class ZoneRepo {
     cache = Map.of();
     previousLastModifiedTimes = new HashMap<>();
     
-    log.info(() -> "Monitoring file paths for DNS records: " + paths);
+    log.info(() -> "Monitoring zone file paths: " + paths);
     TaskRunner.once(this::refreshAll, 0, TimeUnit.SECONDS).join();
     TaskRunner.repeat(this::refreshAll, 30, TimeUnit.SECONDS);
   }
@@ -88,7 +88,7 @@ public class ZoneRepo {
 
     
     // Reading lines
-    log.info(() -> "Detected change in zone file. Reloading: " + file.getPath());
+    log.info(() -> "Reloading zone file: " + file.getPath());
     
     // Read DNS records
     Zone out;

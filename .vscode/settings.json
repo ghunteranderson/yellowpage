@@ -3,5 +3,6 @@
     "name": "Yellowpage Unit Tests",
     "workingDirectory": "${workspaceFolder}"
   },
-  "explorer.excludeGitIgnore": true
+  "explorer.excludeGitIgnore": true,
+  "java.configuration.updateBuildConfiguration": "automatic"
 }

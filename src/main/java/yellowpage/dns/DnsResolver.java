@@ -2,10 +2,12 @@ package yellowpage.dns;
 
 import java.util.List;
 
+import io.prometheus.metrics.core.datapoints.CounterDataPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.exceptions.YellowpageException;
+import yellowpage.metrics.Metrics;
 import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsRecordType;
 import yellowpage.model.Zone;
@@ -17,6 +19,8 @@ public class DnsResolver implements DnsMessageHandler {
 
   private final ZoneRepo repo;
   private final DnsForwarder forwarder;
+  
+  private final CounterDataPoint answerLocalCounter = Metrics.getDnsAnsweredLocal();
 
   public DnsResolver(YellowpageConfig config, DnsForwarder forwarder){
     this(new ZoneRepo(config), forwarder);
@@ -52,6 +56,7 @@ public class DnsResolver implements DnsMessageHandler {
     else {
       var record = queryZones(question, host, zones);
       ctx.reply(buildAnswer(record, clientMesg));
+      answerLocalCounter.inc();
     }
 
   }

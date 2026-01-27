@@ -6,11 +6,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.udp.AsyncUdpConnector;
 import yellowpage.udp.BlockingUdpConnector;
 import yellowpage.udp.UdpConnector;
 
+@Log
 public class DnsServer {
 
   private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
@@ -21,17 +23,18 @@ public class DnsServer {
   private final AtomicBoolean running;
 
   public DnsServer(YellowpageConfig config) {
-
     // Setup UDP connection
     var bindPort = config.getServerPort();
     var bindIpOpt = config.getServerIp();
     var bindAddr = bindIpOpt.map(ip -> new InetSocketAddress(ip, bindPort)).orElseGet(() -> new InetSocketAddress(bindPort));
+    log.info("DNS server listening on " + bindAddr.getHostString() + ":" + bindAddr.getPort());
     udpConnection = new AsyncUdpConnector(
       new BlockingUdpConnector(bindAddr), 
       512);
 
     // Setup handler
     var forwardAddr = config.getForwarderAddress();
+    log.info("Forwarding address set to " + forwardAddr.getHostString() + ":" + forwardAddr.getPort());
     this.handler = new InboundUdpHandler(config, udpConnection, forwardAddr);
 
     // Start workers

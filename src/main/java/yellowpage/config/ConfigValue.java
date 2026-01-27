@@ -50,6 +50,10 @@ public class ConfigValue {
       });
   }
 
+  public Optional<Boolean> asBoolean(){
+    return asString().map(Boolean::parseBoolean);
+  }
+
   
   
 }

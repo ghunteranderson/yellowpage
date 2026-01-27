@@ -37,4 +37,12 @@ public class YellowpageConfig {
     return config.get("yp.forwarder.ttl").asInt().orElse(3600);
   }
 
+  public boolean isMetricsEnabled(){
+    return config.get("yp.metrics.enabled").asBoolean().orElse(false);
+  }
+
+  public int getMetricsPort(){
+    return config.get("yp.metrics.port").asInt().orElse(9053);
+  }
+
 }

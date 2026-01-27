@@ -4,7 +4,10 @@ import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.prometheus.metrics.core.datapoints.CounterDataPoint;
+import io.prometheus.metrics.core.datapoints.GaugeDataPoint;
 import lombok.RequiredArgsConstructor;
+import yellowpage.metrics.Metrics;
 
 public class DnsForwarder implements DnsMessageHandler {
 
@@ -13,6 +16,10 @@ public class DnsForwarder implements DnsMessageHandler {
 
   private final ConcurrentSkipListSet<PendingRequest> pendingRequests = new ConcurrentSkipListSet<>();
   private final SocketAddress forwardAddr;
+
+  private final CounterDataPoint answerForwardCounter = Metrics.getDnsAnsweredFoward();
+  private final GaugeDataPoint forwardPendingGauge = Metrics.getDnsForwardPending();
+  private final CounterDataPoint forwardDroppedCounter = Metrics.getDnsForwardDropped();
 
   public DnsForwarder(SocketAddress dest) {
     this.forwardAddr = dest;
@@ -32,9 +39,14 @@ public class DnsForwarder implements DnsMessageHandler {
       }
     }
 
-    if (pendingReq != null) {
-
-      pendingRequests.remove(pendingReq);
+    // Check if we're expecting this message
+    if(pendingReq == null)
+      return;
+    
+    // Remove from pending list.
+    // Only allow one response by checking if our thread successfully removed it.
+    if (pendingRequests.remove(pendingReq)) {
+      forwardPendingGauge.dec();
       // TODO: I probalby shouldn't be forwarding this message as-is
       // Review authoritative/recursive flags
       // Foward to original client
@@ -43,6 +55,7 @@ public class DnsForwarder implements DnsMessageHandler {
       var clientResp = dnsMessage.withTxId(clientTxId);
 
       ctx.send(clientResp, clientAddr);
+      answerForwardCounter.inc();
     }
   }
 
@@ -77,10 +90,13 @@ public class DnsForwarder implements DnsMessageHandler {
       synchronized (pendingRequests) {
         while(pendingRequests.size() > PENDING_BUFFER_MAX_SIZE){
           var candidate = pendingRequests.getFirst();
-          pendingRequests.remove(candidate);
+          var removed = pendingRequests.remove(candidate);
+          if(removed)
+            this.forwardDroppedCounter.inc();
         }
       }
     }
+    forwardPendingGauge.set(pendingRequests.size());
   }
 
   @RequiredArgsConstructor

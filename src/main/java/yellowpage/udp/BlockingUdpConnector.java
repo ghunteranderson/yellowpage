@@ -6,13 +6,16 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
+import io.prometheus.metrics.core.datapoints.CounterDataPoint;
 import lombok.extern.java.Log;
 import yellowpage.exceptions.YellowpageException;
+import yellowpage.metrics.Metrics;
 
 @Log
 public class BlockingUdpConnector implements UdpConnector {
 
   private final DatagramChannel channel;
+  private final CounterDataPoint udpErrorCounter;
 
   public BlockingUdpConnector(InetSocketAddress address) {
     try {
@@ -22,6 +25,7 @@ public class BlockingUdpConnector implements UdpConnector {
     } catch(IOException ex){
       throw new YellowpageException("Could not create UdpConnector.", ex);
     }
+    this.udpErrorCounter = Metrics.getUdpError();
   }
 
   @Override
@@ -30,6 +34,7 @@ public class BlockingUdpConnector implements UdpConnector {
     try {
       channel.send(buffer, message.address);
     } catch(IOException ex){
+      this.udpErrorCounter.inc();
       throw new IllegalStateException("Could not send UDP message.", ex);
     }
   }
@@ -41,6 +46,7 @@ public class BlockingUdpConnector implements UdpConnector {
     try {
       addr = channel.receive(buffer);
     } catch(IOException ex){
+      this.udpErrorCounter.inc();
       throw new YellowpageException("Could not receive UDP message.", ex);
     }
 
