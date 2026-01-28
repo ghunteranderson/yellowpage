@@ -8,8 +8,10 @@ import io.prometheus.metrics.core.datapoints.CounterDataPoint;
 import io.prometheus.metrics.core.datapoints.GaugeDataPoint;
 import lombok.RequiredArgsConstructor;
 import yellowpage.metrics.Metrics;
+import yellowpage.model.DnsMessageParser;
+import yellowpage.udp.UdpMessage;
 
-public class DnsForwarder implements DnsMessageHandler {
+public class DnsForwarder {
 
   private static final AtomicInteger NEXT_TX_ID = new AtomicInteger(1);
   private static final int PENDING_BUFFER_MAX_SIZE = 200;
@@ -25,11 +27,10 @@ public class DnsForwarder implements DnsMessageHandler {
     this.forwardAddr = dest;
   }
 
-  @Override
-  public void handleInboundDnsMessage(MessageContext ctx) {
+  public void handleUpstreamResponse(DnsRequestContext ctx) {
 
     // Find pending request
-    var dnsMessage = ctx.getMessage();
+    var dnsMessage = ctx.getRequest();
     var txId = dnsMessage.getTxId();
     PendingRequest pendingReq = null;
     for (var req : pendingRequests) {
@@ -51,30 +52,28 @@ public class DnsForwarder implements DnsMessageHandler {
       // Review authoritative/recursive flags
       // Foward to original client
       var clientTxId = pendingReq.originalTxId;
-      var clientAddr = pendingReq.originalAddress;
       var clientResp = dnsMessage.withTxId(clientTxId);
 
-      ctx.send(clientResp, clientAddr);
+      // Delayed repling with the original context
+      // This helps with tracking and metrics
+      pendingReq.originalCtx.reply(clientResp); 
       answerForwardCounter.inc();
     }
   }
 
-  public void forwardQuery(MessageContext ctx) {
+  public void forwardQuery(DnsRequestContext ctx) {
 
-    var clientMesg = ctx.getMessage();
-    var clientAddr = ctx.getSourceAddr();
-    var clientTxId = clientMesg.getTxId();
-    
     // Issue new unique TX ID.
     var forwardTxId = NEXT_TX_ID.getAndIncrement();
-    var forwardMesg = clientMesg.withTxId(forwardTxId);
+    var forwardMesg = ctx.getRequest().withTxId(forwardTxId);
 
     // Store original request for aync UDP response
-    var pendingRequest = new PendingRequest(clientAddr, clientTxId, forwardTxId);
+    var pendingRequest = new PendingRequest(ctx, forwardTxId);
     cachePendingRequest(pendingRequest);
 
     // Request DNS answer from upstream
-    ctx.send(forwardMesg, forwardAddr);
+    ctx.getUdpClient().send(UdpMessage.outbound(DnsMessageParser.toBytes(forwardMesg), forwardAddr));
+    ctx.disableReplyCheck();
   }
 
   private void cachePendingRequest(PendingRequest req) {
@@ -102,14 +101,14 @@ public class DnsForwarder implements DnsMessageHandler {
   @RequiredArgsConstructor
   private static class PendingRequest implements Comparable<PendingRequest>{
     private final long createdAt;
-    private final SocketAddress originalAddress;
+    private final DnsRequestContext originalCtx;
     private final int originalTxId;
     private final int forwardedTxId;
 
-    public PendingRequest(SocketAddress originalAddress, int originalTxId, int forwardedTxId){
+    public PendingRequest(DnsRequestContext originalCtx, int forwardedTxId){
       this.createdAt = System.currentTimeMillis();
-      this.originalAddress = originalAddress;
-      this.originalTxId = originalTxId;
+      this.originalCtx = originalCtx;
+      this.originalTxId = originalCtx.getRequest().getTxId();
       this.forwardedTxId = forwardedTxId;
     }
 

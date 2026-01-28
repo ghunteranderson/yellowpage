@@ -6,7 +6,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.prometheus.metrics.core.datapoints.GaugeDataPoint;
-import io.prometheus.metrics.core.metrics.Gauge;
 import yellowpage.metrics.Metrics;
 
 public class AsyncUdpConnector implements UdpConnector {

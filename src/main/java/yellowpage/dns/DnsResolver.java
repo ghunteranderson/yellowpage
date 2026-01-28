@@ -15,7 +15,7 @@ import yellowpage.model.DnsMessage.DnsQuestion;
 
 @Log
 @RequiredArgsConstructor
-public class DnsResolver implements DnsMessageHandler {
+public class DnsResolver {
 
   private final ZoneRepo repo;
   private final DnsForwarder forwarder;
@@ -26,14 +26,9 @@ public class DnsResolver implements DnsMessageHandler {
     this(new ZoneRepo(config), forwarder);
   }
 
-  @Override
-  public void handleInboundDnsMessage(MessageContext ctx) {
-      answerOrForward(ctx);
-  }
+  public void resolve(DnsRequestContext ctx) {
 
-  private void answerOrForward(MessageContext ctx) {
-
-    var clientMesg = ctx.getMessage();
+    var clientMesg = ctx.getRequest();
 
     // Extract DNS question
     var questions = clientMesg.getQuestions();

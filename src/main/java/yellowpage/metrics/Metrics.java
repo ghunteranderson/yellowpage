@@ -4,6 +4,7 @@ import io.prometheus.metrics.core.datapoints.CounterDataPoint;
 import io.prometheus.metrics.core.datapoints.GaugeDataPoint;
 import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
+import io.prometheus.metrics.model.snapshots.Unit;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,17 @@ public class Metrics {
   private static final Counter DNS_ERROR = Counter.builder()
     .name("yp_dns_error")
     .help("Number of DNS error responses. This excludes malformed DNS requests that fail to parse.")
+    .register();
+
+  private static final Counter DNS_RESPONSE_SECONDS = Counter.builder()
+    .name("yp_dns_response_seconds")
+    .unit(Unit.SECONDS)
+    .help("Total time to respond to DNS query.")
+    .register();
+
+  private static final Counter DNS_RESPONSE_SECONDS_COUNT = Counter.builder()
+    .name("yp_dns_response_seconds_count")
+    .help("Number of responses in yp_dns_response_seconds")
     .register();
 
   private static final Gauge UDP_BUFFERED_INBOUND = Gauge.builder()
@@ -60,6 +72,14 @@ public class Metrics {
 
   public static CounterDataPoint getDnsError(){
     return DNS_ERROR.labelValues();
+  }
+
+  public static CounterDataPoint getDnsRespSeconds(){
+    return DNS_RESPONSE_SECONDS.labelValues();
+  }
+
+  public static CounterDataPoint getDnsRespSecondsCount(){
+    return DNS_RESPONSE_SECONDS_COUNT.labelValues();
   }
 
   public static GaugeDataPoint getUdpBufferedInbound(){
