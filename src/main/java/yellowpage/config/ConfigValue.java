@@ -3,11 +3,13 @@ package yellowpage.config;
 import java.net.InetAddress;
 import java.util.Optional;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class ConfigValue {
 
+  @Getter
   private final String key;
   private final String value;
 

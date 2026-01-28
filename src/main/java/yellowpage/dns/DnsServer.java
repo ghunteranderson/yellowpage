@@ -25,15 +25,14 @@ public class DnsServer {
   public DnsServer(YellowpageConfig config) {
     // Setup UDP connection
     var bindPort = config.getServerPort();
-    var bindIpOpt = config.getServerIp();
-    var bindAddr = bindIpOpt.map(ip -> new InetSocketAddress(ip, bindPort)).orElseGet(() -> new InetSocketAddress(bindPort));
-    log.info("DNS server listening on " + bindAddr.getHostString() + ":" + bindAddr.getPort());
+    var bindIp = config.getServerIp();
+    log.info("DNS server listening on " + bindIp.toString() + ":" + bindPort);
     udpConnection = new AsyncUdpConnector(
-      new UdpConnectorImpl(bindAddr), 
+      new UdpConnectorImpl(new InetSocketAddress(bindPort)), 
       512);
 
     // Setup handler
-    var forwardAddr = config.getForwarderAddress();
+    var forwardAddr = new InetSocketAddress(config.getForwardAddress(), config.getForwardPort());
     log.info("Forwarding address set to " + forwardAddr.getHostString() + ":" + forwardAddr.getPort());
     this.handler = new DnsMessageDispatcher(config, udpConnection, forwardAddr);
 
