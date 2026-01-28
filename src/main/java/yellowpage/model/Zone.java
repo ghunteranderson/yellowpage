@@ -34,6 +34,19 @@ public class Zone {
     }
 
     return records.stream()
-      .filter(r -> r.name.equals(prefix));
+      .filter(r -> {
+        if(r.name.equals(prefix))
+          return true;
+        
+        if(r.name.equals("*"))
+          return domainLength != zoneLength; // * only matches subdomains
+        
+        if(r.name.startsWith("*")){
+          var recordSuffix = r.name.substring(1); // Match record suffix to domain prefix
+          return prefix.endsWith(recordSuffix);
+        }
+
+        return false;
+      });
   }
 }

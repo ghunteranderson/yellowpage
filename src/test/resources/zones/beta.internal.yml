@@ -1,6 +1,12 @@
 zone: beta.internal
 ttl: 3600
 records:
+  - name: "*"
+    type: A
+    value: 10.0.0.30
   - name: "node-1"
     type: A
     value: 10.0.0.21
+  - name: "*.svc"
+    type: A
+    value: 10.0.0.31

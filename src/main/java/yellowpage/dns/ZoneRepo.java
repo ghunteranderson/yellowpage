@@ -41,7 +41,7 @@ public class ZoneRepo {
 
   public List<Zone> getZonesByDomain(String domain) {
     return cache.values().stream()
-      .filter(z -> domain.endsWith(z.getZone()))
+      .filter(z -> domain.equals(z.getZone()) || domain.endsWith("." + z.getZone()))
       .sorted((z1, z2) -> Integer.compare(z2.getZone().length(), z1.getZone().length()))
       .collect(Collectors.toList());
   }

@@ -69,6 +69,8 @@ public class DnsResolver {
     for (var zone : zones) {
       record = zone.getRecords(host)
           .filter(r -> r.getType() == DnsRecordType.A)
+          // Prioritize longest match
+          .sorted((a, b) -> -1*Integer.compare(a.getName().length(), b.getName().length()))
           .findFirst()
           .orElse(null);
       if (record != null) {
