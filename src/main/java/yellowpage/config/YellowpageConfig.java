@@ -12,8 +12,8 @@ import yellowpage.utils.Log;
 @Getter
 public class YellowpageConfig {
 
-  public static YellowpageConfig getInstance(Map<String, String> args) {
-    var config = new Config(args);
+  public static YellowpageConfig getInstance(Map<String, String> extraConfigs) {
+    var config = new Config(extraConfigs);
     return new YellowpageConfig(config);
   }
 
@@ -32,15 +32,15 @@ public class YellowpageConfig {
     var logBuilder = new StringBuilder().append("Yellowpage config:");
 
     this.zoneDirectory = logConfig(logBuilder,
-        config.get("zones.path"),
+        config.get("zones"),
         c -> c.asString().orElse("/etc/yellowpage/zones.d"));
 
     this.serverPort = logConfig(logBuilder,
-        config.get("server.port"),
+        config.get("port"),
         c -> c.asInt().orElse(53));
 
     this.serverIp = logConfig(logBuilder,
-        config.get("server.ip"),
+        config.get("ip"),
         c -> c.asIPv4()
       .orElseGet(() -> {
         try {
@@ -74,7 +74,7 @@ public class YellowpageConfig {
   private <T> T logConfig(StringBuilder log, ConfigValue config, Function<ConfigValue, T> mapper) {
     var key = config.getKey();
     var value = mapper.apply(config);
-    log.append('\n').append(key).append(" = ").append(value);
+    log.append('\n').append("  ").append(key).append(" = ").append(value);
     return value;
   }
 

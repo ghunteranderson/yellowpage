@@ -2,12 +2,23 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Run DNS Server",
+      "name": "Run Yellowpage",
       "request": "launch",
       "mainClass": "yellowpage.Main",
       "args": [
-        "--yp.server.port=8053",
-        "--yp.zones.path=src/test/resources/zones",
+        "--server.port=8053",
+        "--zones.path=src/test/resources/zones",
+      ],
+    },
+    {
+      "type": "java",
+      "name": "Help Yellowpage",
+      "request": "launch",
+      "mainClass": "yellowpage.Main",
+      "args": [
+        "--help",
+        "--server.port=8053",
+        "--zones.path=src/test/resources/zones",
       ],
     }
   ]
