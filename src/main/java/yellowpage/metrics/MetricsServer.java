@@ -3,36 +3,42 @@ package yellowpage.metrics;
 import java.io.IOException;
 
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
-import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.exceptions.YellowpageException;
+import yellowpage.utils.Log;
 
-@Log
-public class MetricsServer {
+public class MetricsServer implements AutoCloseable {
 
+  private YellowpageConfig config;
   private HTTPServer prometheus;
+  private boolean started;
 
-  public MetricsServer(YellowpageConfig config){
-    if(!config.isMetricsEnabled()){
-      log.info("Metrics disabled. Configure with yp.metrics.enabled");  
-      return;
-    }
+  public MetricsServer(YellowpageConfig config) {
+    this.config = config;
+  }
+
+  public synchronized void start() {
+    if (started)
+      throw new YellowpageException("Metrics server has already been started. Cannot start again.");
 
     try {
       var port = config.getMetricsPort();
       this.prometheus = HTTPServer.builder()
-            .port(port)
-            .buildAndStart();
-  
-      log.info("Metrics available: http://localhost:" + prometheus.getPort() + "/metrics");
-    } catch(IOException ex) {
+          .port(port)
+          .buildAndStart();
+
+      Log.info("Metrics exporter available: http://localhost:" + prometheus.getPort() + "/metrics");
+    } catch (IOException ex) {
       throw new YellowpageException("Could not start metrics server.", ex);
     }
+    this.started = true;
   }
 
-  public void stop(){
-    if(this.prometheus != null)
+  @Override
+  public void close() {
+    Log.info("Stopping metrics server.");
+    if (this.prometheus != null)
       this.prometheus.stop();
   }
-  
+
 }

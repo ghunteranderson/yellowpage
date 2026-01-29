@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.prometheus.metrics.core.datapoints.CounterDataPoint;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.exceptions.YellowpageException;
 import yellowpage.metrics.Metrics;
@@ -12,8 +11,8 @@ import yellowpage.model.DnsMessage;
 import yellowpage.model.DnsRecordType;
 import yellowpage.model.Zone;
 import yellowpage.model.DnsMessage.DnsQuestion;
+import yellowpage.utils.TaskRunner;
 
-@Log
 @RequiredArgsConstructor
 public class DnsResolver {
 
@@ -22,8 +21,8 @@ public class DnsResolver {
   
   private final CounterDataPoint answerLocalCounter = Metrics.getDnsAnsweredLocal();
 
-  public DnsResolver(YellowpageConfig config, DnsForwarder forwarder){
-    this(new ZoneRepo(config), forwarder);
+  public DnsResolver(YellowpageConfig config, DnsForwarder forwarder, TaskRunner taskRunner){
+    this(new ZoneRepo(config, taskRunner), forwarder);
   }
 
   public void resolve(DnsRequestContext ctx) {

@@ -7,12 +7,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
 import io.prometheus.metrics.core.datapoints.CounterDataPoint;
-import lombok.extern.java.Log;
 import yellowpage.exceptions.YellowpageException;
 import yellowpage.metrics.Metrics;
 import yellowpage.udp.UdpMessage.UdpMessageType;
 
-@Log
 public class UdpConnectorImpl implements UdpConnector {
 
   private final DatagramChannel channel;

@@ -1,60 +1,75 @@
 package yellowpage;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
+import java.util.Map;
 
-import lombok.extern.java.Log;
+import yellowpage.config.ArgParser;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.dns.DnsServer;
 import yellowpage.metrics.MetricsServer;
+import yellowpage.utils.Log;
 
-@Log
+import sun.misc.Signal;
+
 public class Main {
   public static void main(String[] args) throws IOException {
-    long start = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     try {
-        configureLogging();
-        log.info("Starting Yellowpage DNS");
-
-        var config = YellowpageConfig.getInstance();
-        startMetricsServer(config);
-        startDnsServer(config);
-        long end = System.currentTimeMillis();
-        log.info(() -> "Startup complete in " + (end - start) + "ms");
+      // Parse args and either start server or print help
+      var argMap = ArgParser.parse(args);
+      if(argMap.containsKey("help")){
+        help();
+        System.exit(0);
+      }
+      else{
+        start(argMap, startTime);
+      }
     } catch(Exception ex){
-      log.log(Level.SEVERE, ex, () -> "Yellopage failed to start. See error below.");
+      Log.error(ex.getMessage());
+      help();
       System.exit(1);
     }
   }
 
-  private static void configureLogging(){
-    // Configure log format
-    var formatKey = "java.util.logging.SimpleFormatter.format";
-    if (!System.getProperties().contains(formatKey))
-      System.setProperty(formatKey, "[%4$s] %5$s%6$s%n");
+  private static void help(){
+    System.out.println("USAGE: yellowpage [options]");
+  } 
 
-    // Flush log handlers on shutdown
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      var logManager = LogManager.getLogManager();
-      var loggerNames = logManager.getLoggerNames();
-      while (loggerNames.hasMoreElements()) {
-        var logger = logManager.getLogger(loggerNames.nextElement());
-        for (var handler : logger.getHandlers()) {
-          handler.flush();
-        }
-      }
-    }));
+  private static void start(Map<String, String> args, long startTime) {
+
+    try {
+      Log.info("Starting Yellowpage DNS");
+
+      Signal.handle(new Signal("TERM"), sig -> System.exit(0));
+      Signal.handle(new Signal("INT"), sig -> System.exit(0));
+
+      var config = YellowpageConfig.getInstance(args);
+      startMetricsServer(config);
+      startDnsServer(config);
+      long end = System.currentTimeMillis();
+      Log.info("Startup complete in " + (end - startTime) + "ms");
+    } catch (Exception ex) {
+      Log.error("Yellopage failed to start. See error below.", ex);
+      System.exit(1);
+    }
+
   }
 
-  private static void startDnsServer(YellowpageConfig config){
+  private static void startDnsServer(YellowpageConfig config) {
     var server = new DnsServer(config);
-    Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+    server.start();
+    Runtime.getRuntime().addShutdownHook(new Thread(server::close));
   }
 
-  private static void startMetricsServer(YellowpageConfig config){
+  private static void startMetricsServer(YellowpageConfig config) {
+    if (!config.isMetricsEnabled()) {
+      Log.info("Metrics server disabled.");
+      return;
+    }
+
     var server = new MetricsServer(config);
-    Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+    server.start();
+    Runtime.getRuntime().addShutdownHook(new Thread(server::close));
   }
 
 }

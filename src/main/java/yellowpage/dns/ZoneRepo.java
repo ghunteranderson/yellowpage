@@ -7,36 +7,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
-import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.model.Zone;
 import yellowpage.model.ZoneParser;
+import yellowpage.utils.Log;
 import yellowpage.utils.TaskRunner;
 
-@Log
 public class ZoneRepo {
 
   private final File[] paths;
   private Map<String, Zone> cache;
   private Map<String, Instant> previousLastModifiedTimes;
 
-  public ZoneRepo(YellowpageConfig config){
-    this(List.of(config.getZoneDirectory()));
+  public ZoneRepo(YellowpageConfig config, TaskRunner taskRunner){
+    this(List.of(config.getZoneDirectory()), taskRunner);
   }
 
-  public ZoneRepo(List<String> paths){
+  public ZoneRepo(List<String> paths, TaskRunner taskRunner){
     this.paths = paths.stream().map(File::new).toArray(i -> new File[i]);
     cache = Map.of();
     previousLastModifiedTimes = new HashMap<>();
     
-    log.info(() -> "Monitoring zone file paths: " + paths);
-    TaskRunner.once(this::refreshAll, 0, TimeUnit.SECONDS).join();
-    TaskRunner.repeat(this::refreshAll, 30, TimeUnit.SECONDS);
+    taskRunner.once(this::refreshAll, 0, TimeUnit.SECONDS).join();
+    taskRunner.repeat(this::refreshAll, 30, TimeUnit.SECONDS);
   }
 
   public List<Zone> getZonesByDomain(String domain) {
@@ -60,7 +56,7 @@ public class ZoneRepo {
         else if(p.isDirectory())
           return Stream.of(p.listFiles()).filter(c -> c.isFile());
         else {
-          log.warning("Ignoring DNS file location. Does not exist: " +  p.getAbsolutePath());
+          Log.warn("Ignoring DNS file location. Does not exist: " +  p.getAbsolutePath());
           return Stream.of();
         }
       })
@@ -73,7 +69,7 @@ public class ZoneRepo {
     this.cache = newCache;
     
     if(this.cache.values().stream().allMatch(z -> z.getRecords().isEmpty()))
-      log.warning("No DNS records found.");
+      Log.warn("No DNS records found.");
   }
 
   private Zone readFile(File file){
@@ -88,14 +84,14 @@ public class ZoneRepo {
 
     
     // Reading lines
-    log.info(() -> "Reloading zone file: " + file.getPath());
+    Log.info("Reloading zone file: " + file.getPath());
     
     // Read DNS records
     Zone out;
     try {
       out = ZoneParser.fromFile(file);
     } catch(Exception ex){
-      log.log(Level.SEVERE, ex, () -> "Failed to read zone file: " + file.getAbsolutePath());
+      Log.error("Failed to read zone file: " + file.getAbsolutePath(), ex);
       return null;
     }
       

@@ -5,11 +5,10 @@
       "name": "Run DNS Server",
       "request": "launch",
       "mainClass": "yellowpage.Main",
-      "vmArgs": [
-        "-Dyp.server.port=8053",
-        "-Dyp.zones.path=src/test/resources/zones",
-        "-Dyp.metrics.enabled=true"
-      ]
+      "args": [
+        "--yp.server.port=8053",
+        "--yp.zones.path=src/test/resources/zones",
+      ],
     }
   ]
 }

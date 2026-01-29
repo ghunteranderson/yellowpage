@@ -2,20 +2,18 @@ package yellowpage.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Optional;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import lombok.Getter;
-import lombok.extern.java.Log;
 import yellowpage.exceptions.YellowpageException;
+import yellowpage.utils.Log;
 
 @Getter
-@Log
 public class YellowpageConfig {
 
-  public static YellowpageConfig getInstance() {
-    var config = new Config();
+  public static YellowpageConfig getInstance(Map<String, String> args) {
+    var config = new Config(args);
     return new YellowpageConfig(config);
   }
 
@@ -34,15 +32,15 @@ public class YellowpageConfig {
     var logBuilder = new StringBuilder().append("Yellowpage config:");
 
     this.zoneDirectory = logConfig(logBuilder,
-        config.get("yp.zones.path"),
+        config.get("zones.path"),
         c -> c.asString().orElse("/etc/yellowpage/zones.d"));
 
     this.serverPort = logConfig(logBuilder,
-        config.get("yp.server.port"),
+        config.get("server.port"),
         c -> c.asInt().orElse(53));
 
     this.serverIp = logConfig(logBuilder,
-        config.get("yp.server.ip"),
+        config.get("server.ip"),
         c -> c.asIPv4()
       .orElseGet(() -> {
         try {
@@ -54,23 +52,23 @@ public class YellowpageConfig {
 
     // Default to cloudflare 1.1.1.1
     this.forwardAddress = logConfig(logBuilder,
-        config.get("yp.forward.address"),
+        config.get("forward.address"),
         c -> c.asIPv4()
             .orElseGet(() -> new ConfigValue("", "1.1.1.1").asIPv4().get()));
 
     this.forwardPort = logConfig(logBuilder,
-        config.get("yp.forward.port"),
+        config.get("forward.port"),
         c -> c.asInt().orElse(53));
 
     this.metricsEnabled = logConfig(logBuilder,
-        config.get("yp.metrics.enabled"),
-        c -> c.asBoolean().orElse(false));
+        config.get("metrics.enabled"),
+        c -> c.asBoolean().orElse(true));
 
     this.metricsPort = logConfig(logBuilder,
-        config.get("yp.metrics.port"),
+        config.get("metrics.port"),
         c -> c.asInt().orElse(9053));
 
-    log.info(logBuilder::toString);
+    Log.info(logBuilder.toString());
   }
 
   private <T> T logConfig(StringBuilder log, ConfigValue config, Function<ConfigValue, T> mapper) {

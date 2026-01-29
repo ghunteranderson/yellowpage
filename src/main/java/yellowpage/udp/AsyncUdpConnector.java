@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.prometheus.metrics.core.datapoints.GaugeDataPoint;
 import yellowpage.metrics.Metrics;
 
-public class AsyncUdpConnector implements UdpConnector {
+public class AsyncUdpConnector implements UdpConnector, AutoCloseable {
 
   private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
 
@@ -39,12 +39,12 @@ public class AsyncUdpConnector implements UdpConnector {
       try {
         sendOneFromBuffer();
       } catch(Exception ex){
-        // TODO: Count error in metrics
+        // Continue 
       }
       try {
         recieveOneFromBuffer();
       } catch(Exception ex){
-        // TODO COunt error in mertircs
+        // Continue
       }
     }
   }
@@ -65,8 +65,11 @@ public class AsyncUdpConnector implements UdpConnector {
     }
   }
 
-  public void stop(){
+  @Override
+  public void close() throws Exception {
     this.worker.interrupt();
+    if(this.udpConnector instanceof AutoCloseable closeable)
+      closeable.close();
   }
 
   @Override

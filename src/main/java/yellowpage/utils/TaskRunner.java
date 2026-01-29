@@ -8,29 +8,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.RequiredArgsConstructor;
 
-public class TaskRunner {
+public class TaskRunner implements AutoCloseable {
 
   private static final AtomicInteger NEXT_THREAD_ID = new AtomicInteger(1);
 
-  private static final ScheduledThreadPoolExecutor pool = new ScheduledThreadPoolExecutor(0, TaskRunner::threadFactory);
+  private final ScheduledThreadPoolExecutor pool;
 
-  private static final Thread threadFactory(Runnable runnable){
+  public TaskRunner() {
+    this.pool = new ScheduledThreadPoolExecutor(0, this::threadFactory);
+  }
+
+  private Thread threadFactory(Runnable runnable){
     var thread = new Thread(runnable, "Yellowpage-TaskRunner-" + NEXT_THREAD_ID.getAndIncrement());
     thread.setDaemon(true);
     return thread;
   }
 
-  public static ScheduledTask once(Runnable task, int delay, TimeUnit unit) {
+  public ScheduledTask once(Runnable task, int delay, TimeUnit unit) {
     var future = pool.schedule(task, delay, unit);
     return new ScheduledTask(future);
   }
 
-  public static ScheduledTask repeat(Runnable task, int delay, TimeUnit unit) {
+  public ScheduledTask repeat(Runnable task, int delay, TimeUnit unit) {
     var future = pool.scheduleAtFixedRate(task, delay, delay, unit);
     return new ScheduledTask(future);
   }
 
-  public static void shutdown() {
+  @Override
+  public void close() {
     pool.shutdown();
   }
 

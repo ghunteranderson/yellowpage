@@ -1,14 +1,13 @@
 package yellowpage.dns;
 
 import java.net.SocketAddress;
-import java.util.logging.Level;
 
-import lombok.extern.java.Log;
 import yellowpage.config.YellowpageConfig;
 import yellowpage.udp.UdpConnector;
 import yellowpage.udp.UdpMessage;
+import yellowpage.utils.Log;
+import yellowpage.utils.TaskRunner;
 
-@Log
 public class DnsMessageDispatcher {
 
   private final DnsForwarder forwarder;
@@ -16,11 +15,11 @@ public class DnsMessageDispatcher {
   private final SocketAddress forwardAddr;
   private final UdpConnector udpConnector;
 
-  public DnsMessageDispatcher(YellowpageConfig config, UdpConnector udpConnector, SocketAddress forwardAddr){
+  public DnsMessageDispatcher(YellowpageConfig config, UdpConnector udpConnector, SocketAddress forwardAddr, TaskRunner taskRunner){
     this.udpConnector = udpConnector;
     this.forwardAddr = forwardAddr;
     this.forwarder = new DnsForwarder(forwardAddr);
-    this.resolver = new DnsResolver(config, forwarder);
+    this.resolver = new DnsResolver(config, forwarder, taskRunner);
   }
 
   public void handleInboundUdpEvent(UdpMessage udpMessage){
@@ -41,7 +40,7 @@ public class DnsMessageDispatcher {
     
     } catch (Exception ex){
       // Fall back to error message
-      log.log(Level.WARNING, ex, () -> "Failed to handle request from " + sourceAddr);
+      Log.warn("Failed to handle request from " + sourceAddr, ex);
     }
   }
 
