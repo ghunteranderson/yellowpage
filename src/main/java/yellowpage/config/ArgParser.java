@@ -59,8 +59,8 @@ public class ArgParser {
         if(splitIdx == 0)
           errors.add("Invalid option: " + rawKey);
 
+        value = key.substring(splitIdx+1);
         key = key.substring(0, splitIdx);
-        value = key.substring(1);
       }
       // --option value
       else if(!scanner.isEmpty() && !scanner.peekFirst().startsWith("--")){
