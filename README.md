@@ -66,10 +66,5 @@ ProtectSystem=full
 ```
 
 
-Zone files should be stored in `/etc/yellowpage/zones.d`. Be sure to secure the directory when creating it.
-
-```bash
-sudo mkdir -P /etc/yellowpage/zones.d
-sudo chown -R yellowpage:yellowpage /etc/yellowpage 
-sudo chmod -R 655 /etc/yellowpage
-```
+Zone files should be stored in `/etc/yellowpage/zones.d` unless configured otherwise.
+Be sure to restrict write access to all zone paths.

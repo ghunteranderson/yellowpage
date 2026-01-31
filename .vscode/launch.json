@@ -6,8 +6,8 @@
       "request": "launch",
       "mainClass": "yellowpage.Main",
       "args": [
-        "--server.port=8053",
-        "--zones.path=src/test/resources/zones",
+        "--port=8053",
+        "--zones=src/test/resources/zones",
       ],
     },
     {
@@ -17,7 +17,7 @@
       "mainClass": "yellowpage.Main",
       "args": [
         "--help",
-        "--server.port=8053",
+        "--port=8053",
         "--zones.path=src/test/resources/zones",
       ],
     }
