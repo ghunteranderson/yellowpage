@@ -54,7 +54,7 @@ public class DnsServer implements AutoCloseable {
     resources.add(udpConnector);
 
     // Setup handler
-    var forwardAddr = new InetSocketAddress(config.getForwardAddress(), config.getForwardPort());
+    var forwardAddr = new InetSocketAddress(config.getForwardIp(), config.getForwardPort());
     var handler = new DnsMessageDispatcher(config, udpConnector, forwardAddr, taskRunner);
     resources.add(handler);
 

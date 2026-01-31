@@ -21,14 +21,14 @@ public class YellowpageCli {
           "List of directories or files where Yellowpage zone files can be found. Separate multiple paths with a commma.")
       .register()
 
-      .withArg("forward.address")
+      .withArg("forward.ip")
       .defaults("1.1.1.1")
       .description("Upstream DNS server for queries not answered by the local zone files.")
       .register()
 
       .withArg("forward.port")
       .defaults("53")
-      .description("Port of upstream DNS. See --forward.address")
+      .description("Port of upstream DNS. See --forward.ip")
       .register()
 
       .withArg("metrics.enabled")

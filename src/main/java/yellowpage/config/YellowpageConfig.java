@@ -22,7 +22,7 @@ public class YellowpageConfig {
   private final int serverPort;
   private final InetAddress serverIp;
 
-  private final InetAddress forwardAddress;
+  private final InetAddress forwardIp;
   private final int forwardPort;
 
   private final boolean metricsEnabled;
@@ -51,8 +51,8 @@ public class YellowpageConfig {
       }));
 
     // Default to cloudflare 1.1.1.1
-    this.forwardAddress = logConfig(logBuilder,
-        config.get("forward.address"),
+    this.forwardIp = logConfig(logBuilder,
+        config.get("forward.ip"),
         c -> c.asIPv4()
             .orElseGet(() -> new ConfigValue("", "1.1.1.1").asIPv4().get()));
 
