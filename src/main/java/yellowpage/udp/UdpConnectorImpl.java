@@ -22,7 +22,7 @@ public class UdpConnectorImpl implements UdpConnector {
     try {
       this.channel = DatagramChannel.open();
       this.channel.bind(address);
-      channel.configureBlocking(false);
+      channel.configureBlocking(true);
     } catch(IOException ex){
       throw new YellowpageException("Could not create UdpConnector.", ex);
     }

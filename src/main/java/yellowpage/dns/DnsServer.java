@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import yellowpage.config.YellowpageConfig;
 import yellowpage.exceptions.YellowpageException;
-import yellowpage.udp.AsyncUdpConnector;
 import yellowpage.udp.UdpConnector;
 import yellowpage.udp.UdpConnectorImpl;
 import yellowpage.utils.Log;
@@ -48,9 +47,7 @@ public class DnsServer implements AutoCloseable {
     var bindPort = config.getServerPort();
     var bindIp = config.getServerIp();
     Log.info("DNS server listening on " + bindIp.toString() + ":" + bindPort);
-    var udpConnector = new AsyncUdpConnector(
-        new UdpConnectorImpl(new InetSocketAddress(bindPort)),
-        512);
+    var udpConnector = new UdpConnectorImpl(new InetSocketAddress(bindPort));
     resources.add(udpConnector);
 
     // Setup handler
@@ -59,7 +56,7 @@ public class DnsServer implements AutoCloseable {
     resources.add(handler);
 
     // Start workers
-    int poolSize = 10;
+    int poolSize = 4;
     var resolverPool = Executors.newFixedThreadPool(
         poolSize,
         runnable -> new Thread(runnable, "Yellowpage-Resolver-" + NEXT_THREAD_ID.getAndIncrement()));

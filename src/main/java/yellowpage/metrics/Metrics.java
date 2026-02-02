@@ -43,12 +43,6 @@ public class Metrics {
     .help("Number of responses in yp_dns_response_seconds")
     .register();
 
-  private static final Gauge UDP_BUFFERED_INBOUND = Gauge.builder()
-    .name("yp_udp_buffered")
-    .help("The number of buffered UDP messages awaiting handling.")
-    .labelNames("kind")
-    .register();
-
   private static final Counter UDP_ERROR = Counter.builder()
     .name("yp_udp_error")
     .help("Number of UDP IO errors.")
@@ -82,22 +76,8 @@ public class Metrics {
     return DNS_RESPONSE_SECONDS_COUNT.labelValues();
   }
 
-  public static GaugeDataPoint getUdpBufferedInbound(){
-    return UDP_BUFFERED_INBOUND.labelValues("inbound");
-  }
-
-  public static GaugeDataPoint getUdpBufferedOutbound(){
-    return UDP_BUFFERED_INBOUND.labelValues("outbound");
-  }
-
   public static CounterDataPoint getUdpError(){
     return UDP_ERROR.labelValues();
   }
-
-  
-
-
-  
-  
   
 }
